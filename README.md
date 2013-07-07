@@ -13,5 +13,8 @@ How to run the demo:
 2. Open another tab/window in the terminal and type the following commands:
 
     python db_setup.py
+    
     sudo chmod 777 logs.db
+    
     sudo python demo.py
+    
