@@ -1,5 +1,5 @@
 import bottle
-from bottle import route, run, request
+from bottle import route, run, request, template
 import sqlite3
 import json
 import logging
@@ -18,8 +18,9 @@ def receive_log():
     conn = sqlite3.connect('logs.db')
     c = conn.cursor()
     for row in data:
+        import ast
+        row[1] = ast.literal_eval(row[1])["cpu"]
         c.execute("INSERT INTO log (hostId, cpu, time) VALUES (?, ?, ?)",row)
-        logging.info(row)
     conn.commit()
     c.close()
 
@@ -36,10 +37,14 @@ def receive_host():
 @route('/showlogs', method='GET')
 def show_logs():
     conn = sqlite3.connect('logs.db')
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT hostId, cpu FROM log")
     result = c.fetchall()
-    return str(result)
+
+    logging.basicConfig(level=logging.DEBUG)
+    logging.info(result)
+    return template('logs_template', logs=result)
 
 @route('/showhosts', method='GET')
 def show_hosts():
@@ -50,4 +55,5 @@ def show_hosts():
     return str(result)
 
 bottle.debug(True) 
-bottle.run(host='localhost', port=8081,reloader=True) 
+bottle.run(host='localhost', port=8081,reloader=True)
+bottle.TEMPLATE_PATH.insert(0,'/Users/merenlin/client-monitor/views') 
